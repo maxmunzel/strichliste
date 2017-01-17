@@ -7,12 +7,23 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script>
+        function book (id, isKasten) {
+
+
+            //increment button locally
+            button = $("#bt-"+id);
+            button.text(Number(button.text())+1);
+        }
+    </script>
 </head>
 <body>
 
 <div class="container" style="margin-bottom: 40px;">
   <h2>Strichliste</h2>
-  <p>The .table class adds basic styling (light padding and only horizontal dividers) to a table:</p>
+  <p> <button type="button" class="btn btn-danger">
+                          <span class="glyphicon glyphicon-th"></span></button> streicht jeweils einen Kasten ab.</p>
   <table class="table table-striped header-fixed">
     <thead>
       <tr>
@@ -28,13 +39,19 @@
       <tr>
         {% for val in human %}
           <th>
+
               {% if val is number %}
-              <button type="button" class="btn btn-primary">{{val}}</button>
+                    {% with id = human[0] ~ "_" ~ (loop.index - 2) %}
+                      <button type="button" id="bt-{{ id }}" class="btn btn-primary" onclick="book('{{id}}', false)">{{val}}</button>
+                      <button type="button" class="btn btn-danger" onclick="book('{{id}}', true)">
+                          <span class="glyphicon glyphicon-th"></span></button>
+                    {% endwith %}
               {% else %}
-              {{val}}
+                    {{val}}
               {% endif %}
           </th>
           {% endfor %}
+
       </tr>
     {% endfor %}
     </tbody>

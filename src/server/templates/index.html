@@ -9,14 +9,23 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
     <script>
-        function book(human_name, category_name, amount) {
+        
+        function book(human_id, category_id, amount) {
+            var url = "add_transaction/" + human_id + "/" + category_id + "/" + String(amount);
+            var jqxhr = $.ajax(url)
+                .done(function() {
+                    //increment button locally
+                    var id = "bt-" + human_id + "%" + category_id;
+                    var button = document.getElementById(id);
+                    button.textContent = Number(button.textContent) + amount;
+                    })
+                .fail(function() {
+                    alert( "Network error" );
+                    })
 
-            //increment button locally
-            var id = "bt-" + human_name + "%" + category_name;
-            var button = document.getElementById(id);
-            button.textContent = Number(button.textContent) + amount;
-            // button = $("#bt-" + id);
-            // button.text(Number(button.text())+amount);
+
+
+
         }
     </script>
 </head>

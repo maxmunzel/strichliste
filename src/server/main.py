@@ -9,15 +9,11 @@ db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 
 
-def getData(user_id: str) -> object:
-    pass
-
-
 class User(db.Model):
     # models a user by their name.
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, unique=True)
-    locked = db.Column(db.Boolean)
+    name = db.Column(db.Text, unique=True, nullable=False)
+    locked = db.Column(db.Boolean, nullable=False)
 
     def __init__(self, name):
         self.name = name
@@ -42,9 +38,9 @@ class Category(db.Model):
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, unique=True)
-    bulk_size = db.Column(db.Integer)
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
+    name = db.Column(db.Text, unique=True, nullable=False)
+    bulk_size = db.Column(db.Integer, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
     category = db.relationship("Category", backref="products")
 
     def __init__(self, name: str, category: Category, bulk_size: int = 0):
@@ -58,14 +54,16 @@ class Product(db.Model):
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
+    timestamp = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
     user = db.relationship("User", backref="transactions")
     category = db.relationship("Category", backref="transactions")
-    amount = db.Column(db.Integer)
+    amount = db.Column(db.Integer, nullable=False)
+    undone = db.Column(db.Boolean, nullable=False)
 
     def __init_(self, user: User, category: Category, timestamp: datetime.datetime, amount: int = 1) -> None:
+        self.undone = False
         self.user = user
         self.category = category
         self.timestamp = timestamp
@@ -89,9 +87,10 @@ def init_with_dummy_data():
     ötti = Product(name="Öttinger",
                    category=cat_b,
                    bulk_size=20)
-    transaction_1 = Transaction(user=erik, category=cat_b, amount=5, timestamp=datetime.datetime.now())
+    transaction_1 = Transaction(user=erik, category=cat_b, amount=5, timestamp=datetime.datetime.now(), undone=False)
     [db.session.add(entity) for entity in (erik, monika, gerhard, bernd, cat_b, cat_c, ötti, transaction_1)]
     db.session.commit()
+
 
 def jsonfy_user(user: User):
     response = dict()
@@ -99,6 +98,7 @@ def jsonfy_user(user: User):
     response["name"] = user.name
     response["locked"] = user.locked
     return json.dumps(response, sort_keys=True, indent=4)
+
 
 @app.route("/")
 def hello():
@@ -109,7 +109,9 @@ def hello():
             output.append(
                 sum(
                     list(map(lambda x: x.amount,
-                        list(Transaction.query.filter(Transaction.category == category, Transaction.user == user))
+                        list(Transaction.query.filter(Transaction.category == category,
+                                                      Transaction.user == user,
+                                                      Transaction.undone == False))
                         ))
                 )
             )
@@ -138,7 +140,11 @@ def add_transaction(user_id: str, category_id: str, amount: int):
         return "oh you."
     user = User.query.filter(User.id == user_id).first_or_404()
     category = Category.query.filter(Category.id == category_id).first_or_404()
-    transaction = Transaction(user=user, category=category, timestamp=datetime.datetime.now(), amount=amount)
+    transaction = Transaction(user=user,
+                              category=category,
+                              timestamp=datetime.datetime.now(),
+                              amount=amount,
+                              undone=False)
     db.session.add(transaction)
     db.session.commit()
     return "ok"
@@ -159,6 +165,13 @@ def add_user(name: str):
     except IntegrityError:
         return "{'Error': 'User with given name already exists'}"
     return jsonfy_user(user)
+
+@app.route("/undo")
+def undo():
+    """Undoes the lastest (by time) transaction"""
+    transaction = Transaction.query.filter(Transaction.undone is False).sort(Transaction.timestamp).first_or_404()
+    transaction.undone = True
+    return "ok"
 
 if __name__ == "__main__":
     debug = True

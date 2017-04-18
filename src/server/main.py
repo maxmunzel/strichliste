@@ -169,8 +169,12 @@ def add_user(name: str):
 @app.route("/undo")
 def undo():
     """Undoes the lastest (by time) transaction"""
-    transaction = Transaction.query.filter(Transaction.undone is False).sort(Transaction.timestamp).first_or_404()
+    transaction = Transaction.query\
+        .filter(Transaction.undone == False)\
+        .order_by(Transaction.timestamp.desc()).first_or_404()
     transaction.undone = True
+    db.session.add(transaction)
+    db.session.commit()
     return "ok"
 
 if __name__ == "__main__":

@@ -22,10 +22,16 @@
                 .fail(function() {
                     alert( "Network error" );
                     })
+        }
 
-
-
-
+        function undo() {
+            $.ajax("undo")
+                .done(function () {
+                    location.reload();
+                })
+                .fail(function () {
+                    alert ("Error. Couldn't undo");
+                })
         }
     </script>
 </head>
@@ -71,7 +77,7 @@
     {% endfor %}
     </tbody>
   </table>
-    <button type="button" class="btn btn-warning">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
+    <button type="button" class="btn btn-warning" onclick="undo()">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
 </div>
 </body>
 </html>

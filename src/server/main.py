@@ -69,6 +69,9 @@ class Transaction(db.Model):
         self.timestamp = timestamp
         self.amount = amount
 
+    def price(self):
+        return self.category.price * self.amount
+
     def __repr__(self):
         return "<Transaction %r - %r>" % (self.user.name, self.product.name)
 
@@ -101,6 +104,16 @@ def jsonfy_user(user: User):
     response["locked"] = user.locked
     return json.dumps(response, sort_keys=True, indent=4)
 
+def get_user_balance(user_id):
+    user = User.query.filter(User.id == user_id).first_or_404()
+    return sum(
+                map(lambda x: x.price(),
+                    list(  # for some reason this is needed
+                        Transaction.query.filter(Transaction.user == user,
+                                                 Transaction.undone == False).all()
+                    )
+                    )
+                )
 
 @app.route("/")
 def hello():
@@ -150,6 +163,11 @@ def add_transaction(user_id: str, category_id: str, amount: int):
     db.session.add(transaction)
     db.session.commit()
     return "ok"
+
+
+@app.route("/get_user_balance/<user_id>")
+def user_balance_wrapper(user_id):
+    return str(get_user_balance(user_id))
 
 
 @app.route("/get_user_by_name/<name>")

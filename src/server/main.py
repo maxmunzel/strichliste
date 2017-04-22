@@ -82,13 +82,15 @@ def init_with_dummy_data():
     monika = User("Monika")
     gerhard = User("Gerhard")
     bernd = User("Bernd")
-    cat_b = Category("B", 0.4)
+    cat_a = Category("A", 0.4)
+    cat_b = Category("B", 0.45)
     cat_c = Category("C", 0.8)
+    cat_d = Category("D", 1.1)
     ötti = Product(name="Öttinger",
                    category=cat_b,
                    bulk_size=20)
     transaction_1 = Transaction(user=erik, category=cat_b, amount=5, timestamp=datetime.datetime.now(), undone=False)
-    [db.session.add(entity) for entity in (erik, monika, gerhard, bernd, cat_b, cat_c, ötti, transaction_1)]
+    [db.session.add(entity) for entity in (erik, monika, gerhard, bernd, cat_a, cat_b, cat_c, cat_d, ötti, transaction_1)]
     db.session.commit()
 
 
@@ -181,4 +183,4 @@ if __name__ == "__main__":
     debug = True
     if debug:
         init_with_dummy_data()
-    app.run(debug=debug)
+    app.run(debug=debug, host="0.0.0.0")

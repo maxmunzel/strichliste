@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
 
     <script>
         
@@ -33,14 +34,42 @@
                     alert ("Error. Couldn't undo");
                 })
         }
+
+        function batch_order(human_id, category_id) {
+            BootstrapDialog.show({
+            title: 'Kastengröße wählen',
+            // message: 'Click buttons below.',
+            buttons: [{
+                label: '24 (Rothaus)',
+                action: function () {
+                    book(human_id, category_id, 24);
+                    BootstrapDialog.closeAll()
+                }
+            }, {
+                label: '20 (Ötti/Flens)',
+                action: function(){
+                    book(human_id, category_id, 20);
+                    BootstrapDialog.closeAll()
+                }
+            }, {
+                label: '12 (Wasser)',
+                action: function() {
+                    book(human_id, category_id, 6);
+                    BootstrapDialog.closeAll()
+                }
+            }]
+        });
+        }
     </script>
 </head>
 <body>
 
 <div class="container" style="margin-bottom: 40px;">
   <h2>Strichliste</h2>
-  <p> <button type="button" class="btn btn-danger">
-                          <span class="glyphicon glyphicon-th"></span></button> streicht jeweils einen Kasten ab.</p>
+  <p>
+      Benutze
+      <button type="button" class="btn btn-danger">
+                          <span class="glyphicon glyphicon-th"></span></button>, um Kästen abzustreichen.</p>
   <table class="table table-striped header-fixed">
     <thead>
       <tr>
@@ -62,7 +91,7 @@
                   {% with id = human_id ~ "%" ~ category_id %}
                       <button type="button" id="bt-{{ id }}" class="btn btn-primary"
                               onclick="book('{{human_id}}', '{{category_id}}', 1)">{{val}}</button>
-                      <button type="button" class="btn btn-danger" onclick="book('{{human_name}}','{{category_name}}', 1)">
+                      <button type="button" class="btn btn-danger" onclick="batch_order('{{human_id}}','{{category_id}}')">
                           <span class="glyphicon glyphicon-th"></span></button>
                     {% endwith %}
                     {% endwith %}

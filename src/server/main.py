@@ -104,16 +104,23 @@ def jsonfy_user(user: User):
     response["locked"] = user.locked
     return json.dumps(response, sort_keys=True, indent=4)
 
-def get_user_balance(user_id):
+
+def get_user_balance(user_id: int,
+                     from_date: datetime.datetime=datetime.datetime.min,
+                     until_date: datetime.datetime=datetime.datetime.max):
     user = User.query.filter(User.id == user_id).first_or_404()
-    return sum(
+    return round(
+            sum(
                 map(lambda x: x.price(),
                     list(  # for some reason this is needed
                         Transaction.query.filter(Transaction.user == user,
-                                                 Transaction.undone == False).all()
+                                                 Transaction.undone == False,
+                                                 Transaction.timestamp > from_date,
+                                                 Transaction.timestamp < until_date).all()
                     )
-                    )
-                )
+                   )
+                ), 2)
+
 
 @app.route("/")
 def hello():
@@ -144,8 +151,22 @@ def hello():
     for category in Category.query.order_by(Category.price).all():
         data["fields"].append(category)
     [data["humans"].append(get_user_data(user)) for user in User.query.order_by(User.name).all()]
-    return render_template("index.html", humans=data["humans"],
-                           fields=data["fields"])
+    return render_template("index.html",
+                           humans=data["humans"],
+                           fields=data["fields"],
+                           scaling="100%")  # ugly, semi-functional and currently only used for fiddling
+
+
+@app.route("/balances")
+def balances():
+    humans = list()
+
+    [humans.append((user.name, str(get_user_balance(user.id)) + "€"))
+     for user in User.query.order_by(User.name).all()]
+
+    return render_template("backend.html",
+                           humans=humans,
+                           scaling="100%")  # ugly, semi-functional and currently only used for fiddling
 
 
 @app.route("/add_transaction/<user_id>/<category_id>/<amount>")

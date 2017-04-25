@@ -8,9 +8,13 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
-
+    <script src="static/bootstrap-datepicker.js"></script>
+    <style src="static/datepicker.css"></style>
+    <!--  http://www.eyecon.ro/bootstrap-datepicker/ -->
     <script>
-
+        $("body").ready(function () {
+            $('#dp0').datepicker();
+        })
     </script>
 </head>
 <body>
@@ -18,10 +22,11 @@
 <div class="container" style="margin-bottom: 40px;">
   <h2>Strichliste</h2>
   <p>
-      <div class="input-daterange input-group" id="datepicker">
-    <input type="text" class="input-sm form-control" name="start" />
-    <span class="input-group-addon">to</span>
-    <input type="text" class="input-sm form-control" name="end" />
+    Abrechnungszeitraum wählen:
+    <div class="input-append date" id="dp0" data-date="12-02-2012" data-date-format="dd-mm-yyyy">
+  <input class="span2" size="16" type="text" value="12-02-2012">
+  <span class="add-on"><i class="icon-th"></i></span>
+</div>
 </div>
   </p>
   <table class="table table-striped header-fixed">
@@ -49,7 +54,6 @@
     {% endfor %}
     </tbody>
   </table>
-    <button type="button" class="btn btn-warning" onclick="undo()">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
 </div>
 </body>
 </html>

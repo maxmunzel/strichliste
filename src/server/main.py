@@ -1,7 +1,8 @@
 from flask import Flask
 from flask import render_template
+from flask import send_from_directory
 from flask_sqlalchemy import SQLAlchemy
-import datetime
+from datetime import datetime
 import json
 from sqlalchemy.exc import IntegrityError
 app = Flask(__name__)
@@ -62,7 +63,7 @@ class Transaction(db.Model):
     amount = db.Column(db.Integer, nullable=False)
     undone = db.Column(db.Boolean, nullable=False)
 
-    def __init_(self, user: User, category: Category, timestamp: datetime.datetime, amount: int = 1) -> None:
+    def __init_(self, user: User, category: Category, timestamp: datetime, amount: int = 1) -> None:
         self.undone = False
         self.user = user
         self.category = category
@@ -92,35 +93,55 @@ def init_with_dummy_data():
     ötti = Product(name="Öttinger",
                    category=cat_b,
                    bulk_size=20)
-    transaction_1 = Transaction(user=erik, category=cat_b, amount=5, timestamp=datetime.datetime.now(), undone=False)
+    transaction_1 = Transaction(user=erik, category=cat_b, amount=5, timestamp=datetime.now(), undone=False)
     [db.session.add(entity) for entity in (erik, monika, gerhard, bernd, cat_a, cat_b, cat_c, cat_d, ötti, transaction_1)]
     db.session.commit()
 
 
-def jsonfy_user(user: User):
-    response = dict()
-    response["id"] = user.id
-    response["name"] = user.name
-    response["locked"] = user.locked
-    return json.dumps(response, sort_keys=True, indent=4)
+def jsonfy_users(users):
+    def extract_user_info(user: User):
+        # we only want some fields as there are some SQLAlchemy-generated fields, we don't want to return.
+        response = dict()
+        response["id"] = user.id
+        response["name"] = user.name
+        response["locked"] = user.locked
+        return response
+    return json.dumps(list(map(extract_user_info, users)), sort_keys=True, indent=4)
 
 
 def get_user_balance(user_id: int,
-                     from_date: datetime.datetime=datetime.datetime.min,
-                     until_date: datetime.datetime=datetime.datetime.max):
+                     from_date: datetime=datetime.min,
+                     until_date: datetime=datetime.max):
     user = User.query.filter(User.id == user_id).first_or_404()
     return round(
-            sum(
-                map(lambda x: x.price(),
-                    list(  # for some reason this is needed
-                        Transaction.query.filter(Transaction.user == user,
-                                                 Transaction.undone == False,
-                                                 Transaction.timestamp > from_date,
-                                                 Transaction.timestamp < until_date).all()
-                    )
-                   )
-                ), 2)
+                sum(
+                    map(lambda x: x.price(),
+                        get_transactions_of_user(from_date, until_date, user))
+                )
+            , 2)
 
+
+def get_transactions_of_user(user, from_date, until_date):
+    return list(  # for some reason this is needed
+        Transaction.query.filter(Transaction.user == user,
+                                 Transaction.undone == False,
+                                 Transaction.timestamp > from_date,
+                                 Transaction.timestamp < until_date).all()
+    )
+
+
+def get_number_of_purchases(user: User,
+                            category: Category,
+                            from_date: datetime = datetime.min,
+                            until_date: datetime = datetime.max):
+    transactions = get_transactions_of_user(user=user,
+                                            from_date=from_date,
+                                            until_date=until_date)
+    return sum(
+        map(lambda x: x.amount,
+            filter(lambda transaction: transaction.category == category, transactions)
+    )
+    )
 
 @app.route("/")
 def hello():
@@ -178,7 +199,7 @@ def add_transaction(user_id: str, category_id: str, amount: int):
     category = Category.query.filter(Category.id == category_id).first_or_404()
     transaction = Transaction(user=user,
                               category=category,
-                              timestamp=datetime.datetime.now(),
+                              timestamp=datetime.now(),
                               amount=amount,
                               undone=False)
     db.session.add(transaction)
@@ -190,11 +211,23 @@ def add_transaction(user_id: str, category_id: str, amount: int):
 def user_balance_wrapper(user_id):
     return str(get_user_balance(user_id))
 
+@app.route("/get_number_of_purchases/<int:user_id>/<int:category_id>")
+def number_of_purchases_wrapper(user_id: int, category_id: int):
+    user = User.query.filter(User.id == user_id).first_or_404()
+    category = Category.query.filter(Category.id == category_id).first_or_404()
+    return str(get_number_of_purchases(user, category))
+
+
+@app.route("/get_all_users")
+def get_all_users():
+    users = User.query.order_by(User.name).all()
+    return jsonfy_users(users)
+
 
 @app.route("/get_user_by_name/<name>")
 def get_user_by_name(name: str):
     user = User.query.filter(User.name == name).first_or_404()
-    return jsonfy_user(user)
+    return jsonfy_users([user])
 
 
 @app.route("/add_user/<name>")
@@ -205,7 +238,7 @@ def add_user(name: str):
         db.session.commit()
     except IntegrityError:
         return "{'Error': 'User with given name already exists'}"
-    return jsonfy_user(user)
+    return jsonfy_users(user)
 
 @app.route("/undo")
 def undo():
@@ -218,6 +251,10 @@ def undo():
     db.session.commit()
     return "ok"
 
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 if __name__ == "__main__":
     debug = True
     if debug:

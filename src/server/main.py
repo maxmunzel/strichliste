@@ -12,6 +12,7 @@ from src.server.models import db, User, Category, Product, Transaction
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     return app
 
@@ -50,29 +51,34 @@ def jsonfy_users(users):
 
 def get_user_balance(user_id: int,
                      from_date: datetime=datetime.min,
-                     until_date: datetime=datetime.max):
+                     until_date: datetime=datetime.max) -> float:
     user = User.query.filter(User.id == user_id).first_or_404()
     return round(
                 sum(
                     map(lambda x: x.price(),
-                        get_transactions_of_user(from_date, until_date, user))
+                        get_transactions_of_user(user=user,
+                                                 from_date=from_date,
+                                                 until_date=until_date))
                 )
-            , 2)
+                , 2)
 
 
 def get_transactions_of_user(user, from_date, until_date):
     return list(  # for some reason this is needed
-        Transaction.query.filter(Transaction.user == user,
-                                 Transaction.undone == False,
-                                 Transaction.timestamp > from_date,
-                                 Transaction.timestamp < until_date).all()
+        filter(lambda transaction: transaction.user_id == user.id,
+               Transaction.query\
+                   .filter(Transaction.undone == False,
+                           Transaction.timestamp > from_date,
+                           Transaction.timestamp < until_date)
+                   .all()
+               )
     )
 
 
 def get_number_of_purchases(user: User,
                             category: Category,
                             from_date: datetime = datetime.min,
-                            until_date: datetime = datetime.max):
+                            until_date: datetime = datetime.max) -> int:
     transactions = get_transactions_of_user(user=user,
                                             from_date=from_date,
                                             until_date=until_date)
@@ -81,6 +87,7 @@ def get_number_of_purchases(user: User,
             filter(lambda transaction: transaction.category == category, transactions)
     )
     )
+
 
 @current_app.route("/")
 def hello():
@@ -180,6 +187,7 @@ def add_user(name: str):
         return "{'Error': 'User with given name already exists'}"
     return jsonfy_users(user)
 
+
 @current_app.route("/undo")
 def undo():
     """Undoes the lastest (by time) transaction"""
@@ -196,7 +204,7 @@ def undo():
 def send_static(path):
     return send_from_directory('static', path)
 if __name__ == "__main__":
-    debug = True
+    debug = False
     if debug:
         init_with_dummy_data()
-    current_app.run(debug=debug, host="0.0.0.0")
+    current_app.run(debug=False, host="0.0.0.0")

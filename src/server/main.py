@@ -4,14 +4,18 @@ from datetime import datetime
 from flask import Flask
 from flask import render_template
 from flask import send_from_directory
-from flask_sqlalchemy import SQLAlchemy
+from flask import current_app
 from sqlalchemy.exc import IntegrityError
+from src.server.models import db, User, Category, Product, Transaction
 
-from src.server.models import User, Category, Product, Transaction
 
-app = Flask(__name__)
-db = SQLAlchemy(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+    db.init_app(app)
+    return app
+
+create_app().app_context().push()
 
 
 def init_with_dummy_data():
@@ -78,7 +82,7 @@ def get_number_of_purchases(user: User,
     )
     )
 
-@app.route("/")
+@current_app.route("/")
 def hello():
     def get_user_data(user: User):
         output = list()
@@ -113,7 +117,7 @@ def hello():
                            scaling="100%")  # ugly, semi-functional and currently only used for fiddling
 
 
-@app.route("/balances")
+@current_app.route("/balances")
 def balances():
     humans = list()
 
@@ -125,7 +129,7 @@ def balances():
                            scaling="100%")  # ugly, semi-functional and currently only used for fiddling
 
 
-@app.route("/add_transaction/<user_id>/<category_id>/<amount>")
+@current_app.route("/add_transaction/<user_id>/<category_id>/<amount>")
 def add_transaction(user_id: str, category_id: str, amount: int):
     amount = int(amount)
     if amount < 1:
@@ -142,30 +146,31 @@ def add_transaction(user_id: str, category_id: str, amount: int):
     return "ok"
 
 
-@app.route("/get_user_balance/<user_id>")
+@current_app.route("/get_user_balance/<user_id>")
 def user_balance_wrapper(user_id):
     return str(get_user_balance(user_id))
 
-@app.route("/get_number_of_purchases/<int:user_id>/<int:category_id>")
+
+@current_app.route("/get_number_of_purchases/<int:user_id>/<int:category_id>")
 def number_of_purchases_wrapper(user_id: int, category_id: int):
     user = User.query.filter(User.id == user_id).first_or_404()
     category = Category.query.filter(Category.id == category_id).first_or_404()
     return str(get_number_of_purchases(user, category))
 
 
-@app.route("/get_all_users")
+@current_app.route("/get_all_users")
 def get_all_users():
     users = User.query.order_by(User.name).all()
     return jsonfy_users(users)
 
 
-@app.route("/get_user_by_name/<name>")
+@current_app.route("/get_user_by_name/<name>")
 def get_user_by_name(name: str):
     user = User.query.filter(User.name == name).first_or_404()
     return jsonfy_users([user])
 
 
-@app.route("/add_user/<name>")
+@current_app.route("/add_user/<name>")
 def add_user(name: str):
     user = User(name)
     try:
@@ -175,7 +180,7 @@ def add_user(name: str):
         return "{'Error': 'User with given name already exists'}"
     return jsonfy_users(user)
 
-@app.route("/undo")
+@current_app.route("/undo")
 def undo():
     """Undoes the lastest (by time) transaction"""
     transaction = Transaction.query\
@@ -187,11 +192,11 @@ def undo():
     return "ok"
 
 
-@app.route('/static/<path:path>')
+@current_app.route('/static/<path:path>')
 def send_static(path):
     return send_from_directory('static', path)
 if __name__ == "__main__":
     debug = True
     if debug:
         init_with_dummy_data()
-    app.run(debug=debug, host="0.0.0.0")
+    current_app.run(debug=debug, host="0.0.0.0")

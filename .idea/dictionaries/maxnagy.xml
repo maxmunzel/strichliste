@@ -2,6 +2,7 @@
   <dictionary name="maxnagy">
     <words>
       <w>sqlalchemy</w>
+      <w>sqlite</w>
       <w>öttinger</w>
     </words>
   </dictionary>

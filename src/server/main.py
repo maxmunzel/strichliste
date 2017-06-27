@@ -5,6 +5,7 @@ from flask import Flask
 from flask import render_template
 from flask import send_from_directory
 from flask import current_app
+from flask import request
 from sqlalchemy.exc import IntegrityError
 from src.server.models import db, User, Category, Product, Transaction
 
@@ -126,9 +127,21 @@ def hello():
 
 @current_app.route("/balances")
 def balances():
-    humans = list()
+    # parse date constrains
+    try:
+        begin_date = datetime.strptime(request.args["begin"], "%Y-%m-%d")
+    except:
+        begin_date = datetime.min
 
-    [humans.append((user.name, str(get_user_balance(user.id)) + "€"))
+    try:
+        end_date = datetime.strptime(request.args["end"], "%Y-%m-%d")
+        end_date = end_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+    except:
+        end_date = datetime.max
+
+    # fetch data and render template
+    humans = list()
+    [humans.append((user.name, str(get_user_balance(user.id, begin_date, end_date)) + "€"))
      for user in User.query.order_by(User.name).all()]
 
     return render_template("backend.html",

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <title>Strichliste</title>
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -16,9 +17,13 @@
                 var url = requestQueue.pop();
                 var jqxhr = $.ajax(url)
                     .done(function () {
+                        if (requestQueue.length == 0) {
+                            document.getElementById("network_problem").style.visibility = "hidden";
+                        }
                     })
                     .fail(function () {
                         requestQueue.push(url);
+                        document.getElementById("network_problem").style.visibility = "visible";
                         setTimeout(commitRequests, 1000);
                     });
             }
@@ -85,6 +90,7 @@
       Benutze
       <button type="button" class="btn btn-danger">
                           <span class="glyphicon glyphicon-th"></span></button>, um Kästen abzustreichen.</p>
+
   <table class="table table-striped header-fixed">
     <thead>
       <tr>
@@ -123,7 +129,14 @@
     {% endfor %}
     </tbody>
   </table>
+    <button type="button" class="btn btn-primary"
+                              onclick="book('{{human_id}}', '{{category_id}}', 1)">
+                          <span style="font-size: {{scaling}}">{{val}}</span>
+                      </button>
     <button type="button" class="btn btn-warning" onclick="undo()">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
+    <button type="button" class="btn btn-danger" id="network_problem" style="visibility: hidden;">
+         Netzwerkproblem!
+     </button>
 </div>
 </body>
 </html>

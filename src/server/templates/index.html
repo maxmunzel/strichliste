@@ -10,6 +10,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
 
     <script>
+        var requestQueue = [];
+        function commitRequests() {
+            while (requestQueue.length > 0) {
+                var url = requestQueue.pop();
+                var jqxhr = $.ajax(url)
+                    .done(function () {
+                    })
+                    .fail(function () {
+                        requestQueue.push(url);
+                        setTimeout(commitRequests, 1000);
+                    });
+            }
+        }
          function book(human_id, category_id, amount, increment_button) {
              if (typeof increment_button === "undefined") {
                  increment_button = true
@@ -23,14 +36,8 @@
              }
 
              var url = "add_transaction/" + human_id + "/" + category_id + "/" + String(amount);
-             var jqxhr = $.ajax(url)
-                 .done(function () {
-                 })
-                 .fail(function () {
-                     setTimeout(function () {
-                         book(human_id, category_id, amount, false)
-                     }, 5000)
-                 });
+             requestQueue.push(url)
+             commitRequests();
          }
 
         function undo() {

@@ -129,11 +129,11 @@
                   {% with human_id = human[0].id %}
                   {% with category_id = fields[(loop.index - 1)].id %}
                   {% with id = human_id ~ "%" ~ category_id %}
-                      <button type="button" id="bt-{{ id }}" class="btn btn-primary"
+                      <button type="button" id="bt-{{ id }}" class="btn btn-primary btn-lg"
                               onclick="book('{{human_id}}', '{{category_id}}', 1)">
                           <span style="font-size: {{scaling}}">{{val}}</span>
                       </button>
-                      <button type="button" class="btn btn-danger" onclick="batch_order('{{human_id}}','{{category_id}}')">
+                      <button type="button" class="btn btn-danger btn-lg" onclick="batch_order('{{human_id}}','{{category_id}}')">
                           <span class="glyphicon glyphicon-th" style="font-size: {{scaling}}"></span></button>
                     {% endwith %}
                     {% endwith %}

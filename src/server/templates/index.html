@@ -80,6 +80,25 @@
             }]
         });
         }
+
+        function addUserDialog() {
+            BootstrapDialog.show({
+            title: 'Neuen Nutzer ',
+            message: $('<input type="text" id="newUserName" value="" maxlength="100" />'),
+            buttons: [{
+                label: 'anlegen',
+                cssClass: 'btn-primary',
+                hotkey: 13, // Enter.
+                action: function() {
+                    var url = ("add_user/" + document.getElementById("newUserName").value);
+                    var jqxhr = $.ajax(url)
+                    .done(function () {
+                        location.reload();
+                    })
+                }
+            }]
+        });
+        }
     </script>
 </head>
 <body>
@@ -130,8 +149,8 @@
     </tbody>
   </table>
     <button type="button" class="btn btn-primary"
-                              onclick="book('{{human_id}}', '{{category_id}}', 1)">
-                          <span style="font-size: {{scaling}}">{{val}}</span>
+                              onclick="addUserDialog()">
+                          <span style="font-size: {{scaling}}">neuer Nutzer</span>
                       </button>
     <button type="button" class="btn btn-warning" onclick="undo()">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
     <button type="button" class="btn btn-danger" id="network_problem" style="visibility: hidden;">

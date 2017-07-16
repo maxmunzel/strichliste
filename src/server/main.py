@@ -23,10 +23,7 @@ create_app().app_context().push()
 def init_with_dummy_data():
     db.drop_all()
     db.create_all()
-    erik = User("Erik")
-    monika = User("Monika")
-    gerhard = User("Gerhard")
-    bernd = User("Bernd")
+    coleur = User("Coleur")
     cat_a = Category("A", 0.4)
     cat_b = Category("B", 0.45)
     cat_c = Category("C", 0.8)
@@ -34,8 +31,8 @@ def init_with_dummy_data():
     ötti = Product(name="Öttinger",
                    category=cat_b,
                    bulk_size=20)
-    transaction_1 = Transaction(user=erik, category=cat_b, amount=5, timestamp=datetime.now(), undone=False)
-    [db.session.add(entity) for entity in (erik, monika, gerhard, bernd, cat_a, cat_b, cat_c, cat_d, ötti, transaction_1)]
+    # transaction_1 = Transaction(user=erik, category=cat_b, amount=5, timestamp=datetime.now(), undone=False)
+    [db.session.add(entity) for entity in (coleur, cat_a, cat_b, cat_c, cat_d, ötti)]
     db.session.commit()
 
 
@@ -198,7 +195,8 @@ def add_user(name: str):
         db.session.commit()
     except IntegrityError:
         return "{'Error': 'User with given name already exists'}"
-    return jsonfy_users(user)
+    # return jsonfy_users(user)
+    return "Success!"
 
 
 @current_app.route("/undo")

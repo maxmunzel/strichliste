@@ -8,6 +8,9 @@ from flask import current_app
 from flask import request
 from sqlalchemy.exc import IntegrityError
 from src.server.models import db, User, Category, Product, Transaction
+import eventlet
+
+eventlet.monkey_patch()
 
 
 def create_app():

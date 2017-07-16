@@ -6,7 +6,6 @@ from flask import render_template
 from flask import send_from_directory
 from flask import current_app
 from flask import request
-from sqlalchemy.exc import IntegrityError
 from src.server.models import db, User, Category, Product, Transaction
 import eventlet
 
@@ -190,15 +189,13 @@ def get_user_by_name(name: str):
     return jsonfy_users([user])
 
 
-@current_app.route("/add_user/<name>")
-def add_user(name: str):
-    user = User(name)
-    try:
-        db.session.add(user)
-        db.session.commit()
-    except IntegrityError:
+@current_app.route("/add_user/<new_name>")
+def add_user(new_name: str):
+    user = User(new_name)
+    if User.query.filter(User.name == new_name).first() is not None:
         return "{'Error': 'User with given name already exists'}"
-    # return jsonfy_users(user)
+    db.session.add(user)
+    db.session.commit()
     return "Success!"
 
 

@@ -1,6 +1,8 @@
 var requestQueue = [];
+var ready = true;
 function commitRequests() {
-    while (requestQueue.length > 0) {
+    if (ready && requestQueue.length > 0) {
+        ready = false; // only one request at a time
         var url = requestQueue[0];
         var jqxhr = $.ajax(url)
             .done(function () {
@@ -11,9 +13,12 @@ function commitRequests() {
             })
             .fail(function () {
                 document.getElementById("network_problem").style.visibility = "visible";
+            })
+            .always(function (a,b) {
+                ready = true;
             });
     }
-    setTimeout(commitRequests, 5000);
+    setTimeout(commitRequests, 500);
 }
 commitRequests(); // start commit handler
 function book(human_id, category_id, amount, increment_button) {

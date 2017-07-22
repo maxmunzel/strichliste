@@ -1,11 +1,12 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask
 from flask import render_template
 from flask import send_from_directory
 from flask import current_app
 from flask import request
+from flask import abort
 from src.server.models import db, User, Category, Product, Transaction
 import eventlet
 
@@ -205,6 +206,9 @@ def undo():
     transaction = Transaction.query\
         .filter(Transaction.undone == False)\
         .order_by(Transaction.timestamp.desc()).first_or_404()
+    # don't undo changes that happened more than 20s in the past
+    if transaction.timestamp + timedelta(0, 20) < datetime.now():
+        abort(404)
     transaction.undone = True
     db.session.add(transaction)
     db.session.commit()

@@ -1,26 +1,29 @@
-var requestQueue = [];
+var barn = new Barn(localStorage);
+const queueKey = "requestQueue";
+
 var ready = true;
 function commitRequests() {
-    if (ready && requestQueue.length > 0) {
+    if (ready && barn.llen(queueKey) > 0) {
         ready = false; // only one request at a time
-        var url = requestQueue[0];
+        var url = barn.lrange(queueKey, 0, 0)[0];
         var jqxhr = $.ajax(url)
             .done(function () {
-                requestQueue.shift();
-                if (requestQueue.length == 0) {
-                    document.getElementById("network_problem").style.visibility = "hidden";
-                }
-            })
-            .fail(function () {
-                document.getElementById("network_problem").style.visibility = "visible";
+                barn.lpop(queueKey);
+                
             })
             .always(function (a,b) {
                 ready = true;
+                if (barn.llen(queueKey) > 0) {
+                    document.getElementById("network_problem").style.visibility = "visible";
+                } else {
+                    document.getElementById("network_problem").style.visibility = "hidden";
+                }
             });
-    }
-    setTimeout(commitRequests, 500);
+    } 
+    setTimeout(commitRequests, 100);
 }
-commitRequests(); // start commit handler
+$(function(){commitRequests()}); // start commit handler
+
 function book(human_id, category_id, amount, increment_button) {
     if (typeof increment_button === "undefined") {
         increment_button = true
@@ -33,8 +36,8 @@ function book(human_id, category_id, amount, increment_button) {
         button.textContent = Number(button.textContent) + amount;
     }
 
-    var url = "add_transaction/" + human_id + "/" + category_id + "/" + String(amount);
-    requestQueue.push(url)
+    var url = "/add_transaction/" + human_id + "/" + category_id + "/" + String(amount);
+    barn.rpush(queueKey, url);
 }
 
 function undo() {

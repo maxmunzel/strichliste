@@ -219,7 +219,7 @@ def undo():
 def send_static(path):
     return send_from_directory('static', path)
 if __name__ == "__main__":
-    debug = False
+    debug = True
     if debug:
         init_with_dummy_data()
     current_app.run(debug=False, host="0.0.0.0")

@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 import eventlet
+import argparse
 from flask import Flask
 from flask import abort
 from flask import current_app
@@ -9,14 +10,50 @@ from flask import render_template
 from flask import request
 from flask import send_from_directory
 
-from strichliste.models import db, User, Category, Product, Transaction
+from models import db, User, Category, Product, Transaction
 
 eventlet.monkey_patch()
 
 
+# argument parsing
+parser = argparse.ArgumentParser(description="Starts the selfhosting 'strichliste' server")
+parser.add_argument(
+    "-d", "--debug",
+    action="store_true",
+    help="enables Flasks debugger (don't ever set in production!)")
+parser.add_argument(
+    "-t", "--testing",
+    action="store_true",
+    help="set, if you want to execute strichliste in unit testing mode")
+parser.add_argument(
+    "--reset",
+    action="store_true",
+    help="if set, clears any records and initializes the database with default values.")
+parser.add_argument(
+    "-p", "--port",
+    type=int,
+    default=5000)
+parser.add_argument(
+    "--host",
+    default="0.0.0.0")
+parser.add_argument(
+    "-db", "--dataBaseURI",
+    dest="db",
+    default="sqlite:////tmp/test.db"
+)
+args = parser.parse_args()
+
+DEBUG = args.debug                                  # default: False
+TESTING = args.testing                              # default: False
+RESET = args.reset                                  # default: False
+PORT = args.port                                    # default: 5000
+HOST = args.host                                    # default: "0.0.0.0"
+SQLALCHEMY_DATABASE_URI = args.db                   # default: "sqlite:////tmp/test.db"
+
+
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     return app
@@ -26,6 +63,7 @@ create_app().app_context().push()
 
 
 def init_with_dummy_data():
+    assert TESTING or ("YES" == input("Are your sure to delete all records and reset the database? [YES/NO]"))
     db.drop_all()
     db.create_all()
     coleur = User("Coleur")
@@ -225,7 +263,6 @@ def send_static(path):
 
 
 if __name__ == "__main__":
-    debug = True
-    if debug:
+    if RESET:
         init_with_dummy_data()
-    current_app.run(debug=False, host="0.0.0.0")
+    current_app.run(debug=DEBUG, host=HOST, port=PORT)

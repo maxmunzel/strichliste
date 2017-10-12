@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>set password</title>
+    <script src="barn.js"></script>
+    <script>
+        var barn = new Barn(localStorage);
+        window.onload = function () {
+            document.getElementById("text").onclick = function () {
+            barn.set("psk", prompt("Please enter the Password:"))
+        };
+        };
+
+    </script>
+</head>
+<body>
+<h1 id="text">Click to change PSK.</h1>
+</body>
+</html>

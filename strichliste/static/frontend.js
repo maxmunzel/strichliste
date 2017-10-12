@@ -1,12 +1,24 @@
 var barn = new Barn(localStorage);
 const queueKey = "requestQueue";
-
+var psk = barn.get("psk");
+if (psk === null) {
+    psk = "";
+    barn.set("psk", "");
+}
 var ready = true;
+function sign(url){
+    var challenge = $.ajax({
+            type: "GET",
+            url: "challenge",
+            async: false
+        }).responseText;
+    return url + "/" + sha512(url + challenge + psk);
+}
 function commitRequests() {
     if (ready && barn.llen(queueKey) > 0) {
         ready = false; // only one request at a time
         var url = barn.lrange(queueKey, 0, 0)[0];
-        var jqxhr = $.ajax(url)
+        var jqxhr = $.ajax(sign(url))
             .done(function () {
                 barn.lpop(queueKey);
                 
@@ -41,7 +53,7 @@ function book(human_id, category_id, amount, increment_button) {
 }
 
 function undo() {
-    $.ajax("undo")
+    $.ajax(sign("undo"))
         .done(function () {
             location.reload();
         })
@@ -86,7 +98,7 @@ function addUserDialog() {
             hotkey: 13, // Enter.
             action: function () {
                 var url = ("add_user/" + document.getElementById("newUserName").value);
-                var jqxhr = $.ajax(url)
+                var jqxhr = $.ajax(sign(url))
                     .done(function () {
                         location.reload();
                     })

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Strichliste</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
+    <script src="static/barn.js"></script>
+    <script src="static/frontend.js"> </script>
+</head>
+<body>
+
+<div class="container" style="margin-bottom: 40px;">
+  <h2>Strichliste</h2>
+  <p>
+      Benutze
+      <button type="button" class="btn btn-danger">
+                          <span class="glyphicon glyphicon-th"></span></button>, um Kästen abzustreichen.</p>
+
+  <table class="table table-striped header-fixed">
+    <thead>
+      <tr>
+        {% for field in fields %}
+          <th>
+              {{field.name}}
+          </th>
+          {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+    {% for human in humans %}
+      <tr>
+        {% for val in human %}
+          <th>
+              {% if val is number %}
+                  {% with human_id = human[0].id %}
+                  {% with category_id = fields[(loop.index - 1)].id %}
+                  {% with id = human_id ~ "%" ~ category_id %}
+                      <button type="button" id="bt-{{ id }}" class="btn btn-primary btn-lg"
+                              onclick="book('{{human_id}}', '{{category_id}}', 1)">
+                          <span style="font-size: {{scaling}}">{{val}}</span>
+                      </button>
+                      <button type="button" class="btn btn-danger btn-lg" onclick="batch_order('{{human_id}}','{{category_id}}')">
+                          <span class="glyphicon glyphicon-th" style="font-size: {{scaling}}"></span></button>
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+              {% else %}
+                    {{val.name}}
+              {% endif %}
+          </th>
+          {% endfor %}
+
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+    <button type="button" class="btn btn-primary"
+                              onclick="addUserDialog()">
+                          <span style="font-size: {{scaling}}">neuer Nutzer</span>
+                      </button>
+    <button type="button" class="btn btn-warning" onclick="undo()">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
+    <button type="button" class="btn btn-danger" id="network_problem" style="visibility: hidden;">
+         Netzwerkproblem!
+     </button>
+</div>
+</body>
+</html>

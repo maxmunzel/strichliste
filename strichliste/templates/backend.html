@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Strichliste</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
+    <script src="static/bootstrap-datepicker.js"></script>
+    <style src="static/datepicker.css"></style>
+    <!--  http://www.eyecon.ro/bootstrap-datepicker/ -->
+    <script>
+        $("body").ready(function () {
+            $('#dp0').datepicker();
+        })
+    </script>
+</head>
+<body>
+
+<div class="container" style="margin-bottom: 40px;">
+  <h2>Strichliste</h2>
+  <p>
+        <form action="/balances">
+
+    Abrechnungszeitraum wählen: (Funktioniert am besten mit Chrome)
+    <br>
+    Beginn: <input type=date name="begin" value="YYYY-MM-DD">
+  <br>
+  Ende: <input type=date name="end" value="YYYY-MM-DD">
+  <br>
+  <input type="submit" value="Abschicken">
+  </form>
+
+</div>
+</div>
+  </p>
+  <table class="table table-striped header-fixed">
+    <thead>
+      <tr>
+          <th>
+              Name
+          </th>
+          <th>
+              Bilanz
+          </th>
+
+      </tr>
+    </thead>
+    <tbody>
+    {% for human in humans %}
+      <tr>
+        {% for val in human %}
+          <th>
+              {{val}}
+          </th>
+          {% endfor %}
+
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

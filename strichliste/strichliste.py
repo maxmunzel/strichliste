@@ -76,8 +76,19 @@ def create_app():
 create_app().app_context().push()
 
 
-def init_with_dummy_data():
-    assert TESTING or ("YES" == input("Are your sure to delete all records and reset the database? [YES/NO]"))
+@current_app.route("/reset")
+def reset():
+    if TESTING:
+        init_with_dummy_data(True)
+        return "ok"
+    else:
+        abort(404)
+
+
+def init_with_dummy_data(overwrite_safety=False):
+    assert TESTING \
+           or overwrite_safety \
+           or ("YES" == input("Are your sure to delete all records and reset the database? [YES/NO]"))
     db.drop_all()
     db.create_all()
     coleur = User("Coleur")
@@ -226,9 +237,10 @@ def check_transaction(transaction: str, hash: str, psk: str = PSK) -> bool:
     of the transaction in a *unambiguous* way.
     """
     global challenge
-    result = (hash == hashlib.sha512(str(transaction + get_crypto_challenge() + psk).encode("ascii")).hexdigest())
+    correct_response = hashlib.sha512(str(transaction + get_crypto_challenge() + psk).encode("ascii")).hexdigest()
+    print(correct_response)
     challenge = "".join(random.SystemRandom().choice(ascii_letters) for _ in range(42))
-    return result
+    return hash == correct_response
 
 
 @current_app.route("/add_transaction/<user_id>/<category_id>/<amount>/<checksum>")

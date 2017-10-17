@@ -1,0 +1,37 @@
+{% for field in fields %}{{field.name}};{% endfor %}
+{% for human in humans %}{% for val in human %}
+          <th>
+              {% if val is number %}
+                  {% with human_id = human[0].id %}
+                  {% with category_id = fields[(loop.index - 1)].id %}
+                  {% with id = human_id ~ "%" ~ category_id %}
+                      <button type="button" id="bt-{{ id }}" class="btn btn-primary btn-lg"
+                              onclick="book('{{human_id}}', '{{category_id}}', 1)">
+                          <span style="font-size: {{scaling}}">{{val}}</span>
+                      </button>
+                      <button type="button" class="btn btn-danger btn-lg" onclick="batch_order('{{human_id}}','{{category_id}}')">
+                          <span class="glyphicon glyphicon-th" style="font-size: {{scaling}}"></span></button>
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+              {% else %}
+                    {{val.name}}
+              {% endif %}
+          </th>
+          {% endfor %}
+
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+    <button type="button" class="btn btn-primary"
+                              onclick="addUserDialog()">
+                          <span style="font-size: {{scaling}}">neuer Nutzer</span>
+                      </button>
+    <button type="button" class="btn btn-warning" onclick="undo()">undo <span class="glyphicon glyphicon-fast-backward"></span></button>
+    <button type="button" class="btn btn-danger" id="network_problem" style="visibility: hidden;">
+         Netzwerkproblem!
+     </button>
+</div>
+</body>
+</html>

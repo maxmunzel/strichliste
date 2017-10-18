@@ -1,5 +1,6 @@
 var barn = new Barn(localStorage);
 const queueKey = "requestQueue";
+const reloadEvery = "300"; // reload timeout in seconds
 var psk = barn.get("psk");
 if (psk === null) {
     psk = "";
@@ -34,7 +35,22 @@ function commitRequests() {
     } 
     setTimeout(commitRequests, 100);
 }
-$(function(){commitRequests()}); // start commit handler
+
+function reloadWhenOnline() {
+    // reloads the page, but waits for server to be online
+    $.ajax("")
+        .done(function () {
+            location.reload()
+        })
+        .always(function () {
+            setTimeout(reloadWhenOnline, 2000)
+        });
+}
+
+$(function(){
+    commitRequests(); // start commit handler
+    setTimeout(reloadWhenOnline, reloadEvery * 1000);
+});
 
 function book(human_id, category_id, amount, increment_button) {
     if (typeof increment_button === "undefined") {

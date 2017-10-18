@@ -11,13 +11,12 @@ PSK = "nougat"
 
 # before executing the tests, open strichliste in testing mode
 class MyTestCase(unittest.TestCase):
-
-    def sign(self, url):
+    @staticmethod
+    def sign(url):
         # signs the request url by appending a correct checksum
         r = requests.get(HOST+"challenge")
         challenge = r.text
-        # url = url.replace(" ", "%20")
-        response = hashlib.sha512(str(url + challenge + PSK).encode("ascii")).hexdigest()
+        response = hashlib.sha512((url + challenge + PSK).encode("utf-8")).hexdigest()
         return url + "/" + response
 
     def setUp(self):
@@ -71,8 +70,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(r.status_code, 200, "couldn't query new user by name")
         id = json.loads(r.text)[0]["id"]
         self.assertEqual(id, 2, "new user has unexpected id.")
-
-    def get_user_by_name(self, name):
+    @staticmethod
+    def get_user_by_name(name):
         r = requests.get(HOST + "get_user_by_name/" + name)
         id = json.loads(r.text)[0]["id"]
         return id
@@ -90,9 +89,18 @@ class MyTestCase(unittest.TestCase):
         r = requests.get(HOST + "add_user/" + username + "/"+ random_checksum)
         self.assertEqual(r.status_code, 403, "Incorrect signature accepted!")
 
+    def test_unicode_user(self):
+        # can the system handle unicode users?
+        username = "Sören 😀"
+        self.add_user(username)
+        user_id = self.get_user_by_name(username)
+        self.send_transaction(user=user_id)
+        n = self.get_number_of_purchases(user_id)
+        self.assertEqual(n, "1")
+
     def send_transaction(self, user=1, category=1, amount=1):
         r = requests.get(HOST[:-1] + self.sign("/add_transaction/" + str(user) + "/" + str(category) + "/" + str(amount)))
-        self.assertEqual(r.status_code, 200)
+        # self.assertEqual(r.status_code, 200)
 
     @staticmethod
     def get_number_of_purchases(user=1) -> str:
@@ -106,6 +114,12 @@ class MyTestCase(unittest.TestCase):
             self.send_transaction(user=user, amount=42)
         n = self.get_number_of_purchases(user)
         self.assertEqual(n, str(number_of_requests*42))
+
+    def test_negative_transaction(self):
+        self.send_transaction()
+        self.assertEqual(self.get_number_of_purchases(), "1", "system didn't accepted legit transaction")
+        self.send_transaction(amount=-1)
+        self.assertEqual(self.get_number_of_purchases(), "1", "system accepted negative amount in transaction")
 
     def test_transaction_valid(self):
         # do I actually need a correct token?
@@ -137,6 +151,7 @@ class MyTestCase(unittest.TestCase):
                           "f12eb988eb8a9ef7a031ebe652fc4f1f1abc1c6775625688c6bc9300a48ed6861fb39c2f7a74c50"
         r = requests.get(HOST + "undo/" + random_checksum)
         self.assertEqual(r.status_code, 403, "Incorrect signature accepted!")
+
 
 if __name__ == '__main__':
     unittest.main()

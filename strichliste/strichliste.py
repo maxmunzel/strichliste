@@ -237,7 +237,7 @@ def check_transaction(transaction: str, hash: str, psk: str = PSK) -> bool:
     of the transaction in a *unambiguous* way.
     """
     global challenge
-    correct_response = hashlib.sha512(str(transaction + get_crypto_challenge() + psk).encode("ascii")).hexdigest()
+    correct_response = hashlib.sha512(str(transaction + get_crypto_challenge() + psk).encode("utf-8")).hexdigest()
     print(correct_response)
     challenge = "".join(random.SystemRandom().choice(ascii_letters) for _ in range(42))
     return hash == correct_response

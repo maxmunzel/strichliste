@@ -11,8 +11,7 @@ from flask import abort
 from flask import current_app
 from flask import render_template
 from flask import request
-from flask import send_from_directory
-
+from whitenoise import WhiteNoise
 from models import db, User, Category, Product, Transaction
 
 eventlet.monkey_patch()
@@ -70,6 +69,7 @@ def create_app():
     print("connected to: " + SQLALCHEMY_DATABASE_URI)
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+    app.wsgi_app = WhiteNoise(app.wsgi_app, root="static/")
     return app
 
 
@@ -319,11 +319,6 @@ def undo(checksum: str):
     db.session.add(transaction)
     db.session.commit()
     return "ok"
-
-
-@current_app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
 
 
 if __name__ == "__main__":

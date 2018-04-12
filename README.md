@@ -3,7 +3,7 @@ a simple tool to get rid of tally lists. Built to work with slow hardware and un
 
 ## Getting Started
 
-To get strichliste up and running you need python3 (with pip) and [flask](http://flask.pocoo.org). 
+To get *strichliste* up and running you need python3 (with pip) and [flask](http://flask.pocoo.org). 
 
 
 ```bash
@@ -37,9 +37,9 @@ optional arguments:
   -h, --help            show this help message and exit
   -d, --debug           enables Flasks debugger (don't ever set in
                         production!)
-  -t, --testing         set, if you want to execute strichliste in unit
+  -t, --testing         set, if you want to execute initialises in unit
                         testing mode
-  --reset               if set, clears any records and initializes the
+  --reset               if set, clears any records and initialises the
                         database with default values.
   -p PORT, --port PORT
   --host HOST
@@ -58,7 +58,7 @@ Defaults to an sqlite db at `/tmp/test.db`.
 
 For the time being there's no User Interface to manipulate Data. As the underlying database model is fairly simple,
 just use a generic SQL Browser to manipulate the raw Data. For Sqlite (the default) [this](http://sqlitebrowser.org) tool is 
-pretty streight forward. Just open your database, manipulate tables `transactions`, `categories, and `users` as you wish 
+pretty straight forward. Just open your database, manipulate tables `transactions`, `categories`, and `users` as you wish 
 (don't forget to apply your changes) and reload the page in your browser.
 
 ## Generating Reports
@@ -73,7 +73,7 @@ of the request + the challenge + the PreShared Secret (PSK). See look [here](htt
 for details. This signature is then appended to the request url. `frontend.js` defines a utility function [`sign(string)`](https://github.com/maxmunzel/strichliste/blob/bde0d14f3ccb58be8fb7450f5a59c9f7e0f8d31e/strichliste/static/frontend.js#L10)
 that returns signed versions of given urls.
 
-This ensures that only parties in knowledge of the psk may alter data. The PSK is stored in the clients HTML5 localstorage using [barn](https://github.com/arokor/barn). 
+This ensures that only parties in knowledge of the PSK may alter data. The PSK is stored in the clients HTML5 localstorage using [barn](https://github.com/arokor/barn). 
 
 **To insure the key is not extracted using a man-in-the-middle attack, you have to run the server behind a reverse-proxy using HTTPS and [HSTS](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security).**
 

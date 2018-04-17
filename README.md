@@ -7,18 +7,19 @@ To get *strichliste* up and running you need python3 (with pip) and [flask](http
 
 
 ```bash
-# install python3, pip and flask
-sudo apt-get install python3-pip python-flask
+# install python3 and pip
+sudo apt-get install python3-pip
 
 git clone https://github.com/maxmunzel/strichliste.git
 cd strichliste
 
-# install python dependencies
+# install python dependencies (may need sudo)
+pip3 install flask flask-sqlalchemy eventlet whitenoise
 python3 setup.py install
 
 # start the server
 cd strichliste
-python3 strichliste.py --testing # start using a temporary database
+python3 strichliste.py --testing # start using a temporary(!) database
 
 # now open http://localhost:5000/ in your browser of choice
 ```

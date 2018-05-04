@@ -1,6 +1,8 @@
 # strichliste
 a simple tool to get rid of tally lists. Built to work with slow hardware and unreliable network. Based on python, flask and HTML5.
 
+![Screenshot of Frontend]{.images/screenshot.png}
+
 ## Getting Started
 
 To get *strichliste* up and running you need python3 (with pip) and [flask](http://flask.pocoo.org). 

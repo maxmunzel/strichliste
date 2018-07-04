@@ -8,6 +8,8 @@ setup(
         "flask",
         "flask-sqlalchemy",
         'eventlet',
-        "whitenoise"
+        "whitenoise",
+        "requests",
+        "selenium"
     ]
 )

@@ -32,7 +32,11 @@ function commitRequests() {
                     document.getElementById("network_problem").style.visibility = "hidden";
                 }
             });
-    } 
+    }
+    // should you ever increase this rate, make sure to tweak
+    // ../tests/test_strichliste.py->test_chrome_buffering()
+    // accordingly as it expects high frequency bookings to be
+    // buffered (to test the client-side buffering mechanism)
     setTimeout(commitRequests, 100);
 }
 

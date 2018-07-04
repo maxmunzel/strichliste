@@ -3,10 +3,12 @@ import requests
 import sys
 import hashlib
 import json
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
 from time import sleep
 
-HOST = "http://localhost:1847/" # don't forget the trailing slash
-PSK = "nougat"
+HOST = "http://localhost:5000/" # don't forget the trailing slash
+PSK = ""
 
 
 # before executing the tests, open strichliste in testing mode
@@ -139,19 +141,49 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.undo(), 200, "undo got rejected for no apparent reason")
         self.assertEqual(self.get_number_of_purchases(), "2", "undo actually din't undo anything")
         sleep(timeout - 2)
-        self.assertEqual(self.undo(), 200, "undo got rejected even if it was in time")
+        self.assertEqual(self.undo(), 200, "undo got rejected even though it was in time")
         self.assertEqual(self.get_number_of_purchases(), "1", "undo actually din't undo anything")
         sleep(2.5)
         self.assertEqual(self.undo(), 404, "undo got accepted even if it was out of time")
         self.assertEqual(self.get_number_of_purchases(), "1", "undo got rejected, but still removed transaction")
 
-    def undo_valid(self):
+    def test_undo_valid(self):
         # do I actually need a correct token?
         random_checksum = "bebfbcb9f8b63c327c2392ab9be9a93f9e39611e212c3b4ae" \
                           "f12eb988eb8a9ef7a031ebe652fc4f1f1abc1c6775625688c6bc9300a48ed6861fb39c2f7a74c50"
         r = requests.get(HOST + "undo/" + random_checksum)
-        self.assertEqual(r.status_code, 403, "Incorrect signature accepted!")
+        self.assertEqual(r.status_code, 403, "Incorrect signature accepted for /undo!")
 
+    def test_chrome_buffering(self):
+        # tests basic functionality of the client side code including filling the buffer and reloading while syncing
+
+        NUM_TRANSACTIONS = 184
+
+        options = Options()
+        # options.headless = True
+        chrome = Chrome(options=options)
+        self.addCleanup(chrome.close)
+        chrome.get(HOST)
+        btn = chrome.find_element_by_id("bt-1%1")
+        self.assertEqual(btn.text, "0", "User coleur should not have transactions yet, but counter is not '0'.")
+        for i in range(NUM_TRANSACTIONS):
+            btn.click()
+        self.assertEqual(str(NUM_TRANSACTIONS), btn.text, "Button didn't count up.")
+        sleep(0.5)
+        chrome.refresh()  # does the buffer survive reloads?
+        # wait until all transactions are transmitted or no new ones are arriving
+        old = -1
+        new = 0
+        while old < new:
+            sleep(0.5)
+            old, new = int(new), int(self.get_number_of_purchases())
+
+        self.assertEqual(NUM_TRANSACTIONS, int(self.get_number_of_purchases()), "Number of recieved transactions is wrong.")
+        # we expect the interface to lie about buffered transaction to not surprise the user, so we have to refresh
+        # now to get the actual number of transactions again (maybe fix this temporarily false display in the future?)
+        chrome.refresh()
+        btn = chrome.find_element_by_id("bt-1%1")
+        self.assertEqual(str(NUM_TRANSACTIONS), btn.text, "Button shows wrong number of Transactions.")
 
 if __name__ == '__main__':
     unittest.main()

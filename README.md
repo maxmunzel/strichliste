@@ -1,7 +1,7 @@
 # strichliste
 a simple tool to get rid of tally lists. Built to work with slow hardware and unreliable network. Based on python, flask and HTML5.
 
-![Screenshot of Frontend]{.images/screenshot.png}
+[![Screenshot](https://raw.githubusercontent.com/maxmunzel/strichliste/master/.images/screenshot.png)]()
 
 ## Getting Started
 

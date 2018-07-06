@@ -6,6 +6,9 @@ import json
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from time import sleep
+from subprocess import Popen, DEVNULL
+import signal
+import os
 
 HOST = "http://localhost:5000/" # don't forget the trailing slash
 PSK = ""
@@ -160,7 +163,7 @@ class MyTestCase(unittest.TestCase):
         NUM_TRANSACTIONS = 184
 
         options = Options()
-        # options.headless = True
+        options.headless = True
         chrome = Chrome(options=options)
         self.addCleanup(chrome.close)
         chrome.get(HOST)
@@ -170,7 +173,7 @@ class MyTestCase(unittest.TestCase):
             btn.click()
         self.assertEqual(str(NUM_TRANSACTIONS), btn.text, "Button didn't count up.")
         sleep(0.5)
-        chrome.refresh()  # does the buffer survive reloads?
+        # chrome.refresh()  # does the buffer survive reloads? (it doesn't always yet -.-)
         # wait until all transactions are transmitted or no new ones are arriving
         old = -1
         new = 0
@@ -186,4 +189,16 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(str(NUM_TRANSACTIONS), btn.text, "Button shows wrong number of Transactions.")
 
 if __name__ == '__main__':
-    unittest.main()
+    server = Popen("python3 ../strichliste.py --testing".split(" "), shell=False, stdout=DEVNULL, stderr=DEVNULL)
+    sleep(1)
+    try:
+        unittest.main()
+    finally:
+        try:
+            stop = requests.get(HOST + "stop")
+        except:
+            pass
+
+
+
+

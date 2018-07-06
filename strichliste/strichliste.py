@@ -13,6 +13,8 @@ from flask import render_template
 from flask import request
 from whitenoise import WhiteNoise
 from models import db, User, Category, Product, Transaction
+from sys import exit
+from time import sleep
 
 eventlet.monkey_patch()
 
@@ -320,6 +322,16 @@ def undo(checksum: str):
     db.session.commit()
     return "ok"
 
+@current_app.route("/stop")
+def stop():
+    # its surprisingly hard to force quit subprocesses in python, so this acts as a peaceful way to stop testing servers
+    if TESTING:
+        try:
+            return "OK"
+        finally:
+            sleep(0.5)
+            exit(0)
+    abort(404)
 
 if __name__ == "__main__":
     if RESET or TESTING:

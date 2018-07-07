@@ -1,0 +1,15 @@
+
+image: maxmunzel/strichliste-ci
+
+build:
+  stage: build
+  
+  script:
+    - python3 setup.py install
+
+# run tests
+test:
+  stage: test
+  script:
+    - python3 strichliste/tests/test_strichliste.py
+

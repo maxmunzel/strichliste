@@ -11,5 +11,5 @@ build:
 test:
   stage: test
   script:
-    - python3 strichliste/tests/test_strichliste.py
+    - python3 strichliste/strichliste.py --testing & python3 strichliste/tests/test_strichliste.py
 

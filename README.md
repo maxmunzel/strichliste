@@ -38,7 +38,7 @@ Starts the selfhosting 'strichliste' server
 
 optional arguments:
   -h, --help            show this help message and exit
-  -d, --debug           enables Flasks debugger (don't ever set in
+  -d, --debug           enables Flasks debugger (don‘t ever set in
                         production!)
   -t, --testing         set, if you want to execute initialises in unit
                         testing mode
@@ -82,8 +82,6 @@ This ensures that only parties in knowledge of the PSK may alter data. The PSK i
 
 ## Todo
 
-* Some images for this readme
 * multiple Languages
-* better tests
 * more in-depth documentation
 
